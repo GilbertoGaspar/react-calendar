@@ -1,26 +1,75 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useContext } from 'react';
+import Store, { CalendarContext } from './context/Store';
+import Calendar from './components/Calendar';
+import Appointment from './components/Appointment';
 import './App.css';
 
-function App() {
+export default function AppWrapper() {
+  // Store, renders the provider, so the context will be accessible from App.
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Store>
+      <App />
+    </Store>
   );
 }
 
-export default App;
+function App() {
+  const [appointments, setAppointments] = useContext(
+    CalendarContext
+  ).appointments;
+  const [currentAppointmentText, setCurrentAppointmentText] = useContext(
+    CalendarContext
+  ).currentAppointmentText;
+  const [currentAppointmentDate] = useContext(
+    CalendarContext
+  ).currentAppointmentDate;
+
+  const handleAddAppointment = () => {
+    if (currentAppointmentText) {
+      setAppointments(
+        appointments.concat({
+          appointmentText: currentAppointmentText,
+          date: currentAppointmentDate
+        })
+      );
+    } else {
+      alert('Please add a title to your appointment.');
+    }
+  };
+
+  const handleAppointmentTextChange = e => {
+    setCurrentAppointmentText(e.target.value);
+  };
+
+  return (
+    <div className='app'>
+      <h1>React Calendar</h1>
+      <h2>Make a new appointment</h2>
+      <input
+        className='app__input'
+        type='text'
+        placeholder='Your appointment title'
+        value={currentAppointmentText}
+        onChange={handleAppointmentTextChange}
+      ></input>
+      <Calendar />
+      <br />
+      <button className='app__button' onClick={handleAddAppointment}>
+        Add Appointment
+      </button>
+      <h1>Appointments</h1>
+      <hr />
+      {appointments.length > 0 ? (
+        appointments.map((appointment, index) => (
+          <Appointment
+            key={index}
+            text={appointment.appointmentText}
+            date={appointment.date}
+          />
+        ))
+      ) : (
+        <h2>No appointments!</h2>
+      )}
+    </div>
+  );
+}
